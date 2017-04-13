@@ -91,19 +91,22 @@ end
 
 
 class ShelfRow
+  include Enumerable
   # private, etc
-  attr_reader :name, :segment_cnt, :segment_length, :level_cnt
+  attr_reader :name, :segment_cnt, :segment_sizes, :level_cnt
   # Q: Do all segments have same length
-  def initialize(name, segment_cnt, segment_length, level_cnt)
+  def initialize(name, segment_sizes, level_cnt)
     self.name = name
-    self.segment_cnt = segment_cnt
-    self.segment_length = segment_length
+    self.segment_cnt = segment_sizes.size
+    self.segment_sizes = segment_sizes
     self.level_cnt = level_cnt
     self.init_map
   end
 
   def init_map
-    @map = Array.new(@level_cnt){Array.new(@segment_cnt){[]}}
+    @map = Array.new(@level_cnt) do
+      @segment_sizes.collect { |width| {width: width, space: []} }
+    end
   end
 
   def row_length
@@ -118,120 +121,132 @@ class ShelfRow
     @segment_cnt = segment_cnt.to_i
   end
 
-  def segment_length=(segment_length)
-    @segment_length = segment_length.to_f
+  def segment_sizes=(segment_sizes)
+    @segment_sizes = segment_sizes.collect { |e| e.to_f}
   end
 
   def level_cnt=(level_cnt)
     @level_cnt = level_cnt.to_f
   end
 
+  def print
+    p '----row----'
+    @map.each do |r|
+      # p '--segment--'
+      r.each do |s|
+        p s[:space].map { |e| [e.magazine.name, e.type, e.start, e.finish, e.used] }
+        # p '--segment--'
+      end
+      p '----row----'
+    end
+  end
+
+  def each
+    return @map.flatten(1).each unless block_given?
+    @map.flatten(1).each { |item| yield item }
+  end
+end
+
+class Warehouse
+  include Enumerable
+  # private, etc
+  attr_reader :name, :shelf_rows
+
+  def initialize(name)
+    self.name = name
+    @shelf_rows = []
+  end
+
+  def name=(name)
+    @name = name.to_s
+  end
+
+  def push(shelf_row)
+    @shelf_rows.push(shelf_row)
+  end
+
+  def each
+    return @shelf_rows.each unless block_given?
+    @shelf_rows.each { |item| yield item }
+  end
+
   def load(magazines)
-    row = 0
-    segment = 0
     used = 0
+    segments = @shelf_rows.collect_concat { |s| s.to_a } .each
+    seg = segments.next # last segment check
 
     magazines.each do |m|
-      block = @segment_length - m.block_size/2
+      block = seg[:width] - m.block_size/2
 
       # whole segment used
       if used >= block
-        segment += 1
-        if segment == @segment_cnt
-          # row_cnt
-          row += 1
-          segment = 0
-        end
+        seg = segments.next # last segment check
         used = 0
       end
 
       if block - used >= m.length
-        @map[row][segment].push(Block.new(m, used, used + m.length, m.length, Block.types[:NORMAL]))
+        seg[:space].push(Block.new(m, used, used + m.length, m.length, Block.types[:NORMAL]))
         used += m.length
       else
         placed = block - used
-        @map[row][segment].push(Block.new(m, used, @segment_length, placed, Block.types[:NORMAL]))
-        segment += 1
-        if segment == @segment_cnt
-          # row_cnt
-          row += 1
-          segment = 0
-        end
+        seg[:space].push(Block.new(m, used, seg[:width], placed, Block.types[:NORMAL]))
+        seg = segments.next # last segment check
+        block = seg[:width] - m.block_size/2
         while (m.length - placed) > block do
-          @map[row][segment].push(Block.new(m, 0, @segment_length, block, Block.types[:NORMAL]))
+          seg[:space].push(Block.new(m, 0, seg[:width], block, Block.types[:NORMAL]))
           placed += block
-          segment += 1
-          if segment == @segment_cnt
-            # row_cnt
-            row += 1
-            segment = 0
-          end
+          seg = segments.next # last segment check
+          block = seg[:width] - m.block_size/2
         end
         used = m.length - placed
-        @map[row][segment].push(Block.new(m, 0, used, used, Block.types[:NORMAL]))
+        seg[:space].push(Block.new(m, 0, used, used, Block.types[:NORMAL]))
       end
 
       # whole segment used
-      if used >= @segment_length
-        segment += 1
-        if segment == @segment_cnt
-          # row_cnt
-          row += 1
-          segment = 0
-        end
+      if used >= seg[:width]
+        seg = segments.next # last segment check
         used = 0
       end
 
-      if @segment_length - used >= m.reserve
+      if seg[:width] - used >= m.reserve
         if m.reserve > 0
-          @map[row][segment].push(Block.new(m, used, used + m.reserve, m.reserve, Block.types[:RESERVE]))
+          seg[:space].push(Block.new(m, used, used + m.reserve, m.reserve, Block.types[:RESERVE]))
           used += m.reserve
         end
       else
-        reserved = @segment_length - used
-        @map[row][segment].push(Block.new(m, used, @segment_length, reserved, Block.types[:RESERVE]))
-        segment += 1
-        if segment == @segment_cnt
-          # row_cnt
-          row += 1
-          segment = 0
-        end
-        while (m.reserve - reserved) > @segment_length do
-          @map[row][segment].push(Block.new(m, 0, @segment_length, @segment_length, Block.types[:RESERVE]))
-          reserved += @segment_length
-          segment += 1
-          if segment == @segment_cnt
-            # row_cnt
-            row += 1
-            segment = 0
-          end
+        reserved = seg[:width] - used
+        seg[:space].push(Block.new(m, used, seg[:width], reserved, Block.types[:RESERVE]))
+        seg = segments.next # last segment check
+        while (m.reserve - reserved) > seg[:width] do
+          seg[:space].push(Block.new(m, 0, seg[:width], seg[:width], Block.types[:RESERVE]))
+          reserved += seg[:width]
+          seg = segments.next # last segment check
         end
         used = m.reserve - reserved
-        @map[row][segment].push(Block.new(m, 0, used, used, Block.types[:RESERVE]))
-      end
-      @map.each do |r|
-        r.each do |s|
-          s.each { |e| p [e.magazine.name, e.type, e.start, e.finish, e.used] }
-          p '--segment--'
-        end
-        p '--------------'
+        seg[:space].push(Block.new(m, 0, used, used, Block.types[:RESERVE]))
       end
     end
   end
-
 end
 
-
-
-m1 = Magazine.new('auto', '123', 145, 10, Magazine.formats[:NORMAL], 150)
+m1 = Magazine.new('auto', '123', 345, 10, Magazine.formats[:NORMAL], 150)
 m2 = Magazine.new('technika', '110', 350, 7, Magazine.formats[:NORMAL], 0)
-m3 = Magazine.new('kolo', '223', 100, 7, Magazine.formats[:NORMAL], 35)
+m3 = Magazine.new('kolo', '223', 500, 7, Magazine.formats[:NORMAL], 35)
+m4 = Magazine.new('kolo-1', '224', 250, 10, Magazine.formats[:NORMAL], 50)
+m5 = Magazine.new('kolo-2', '225', 330, 10, Magazine.formats[:NORMAL], 50)
+m6 = Magazine.new('test', '226', 450, 10, Magazine.formats[:NORMAL], 50)
+m7 = Magazine.new('computer', '227', 390, 10, Magazine.formats[:NORMAL], 50)
 
-sr1 = ShelfRow.new(1, 5, 100, 3)
+sr1 = ShelfRow.new('D22a', [100,100,120,120], 5)
+sr2 = ShelfRow.new('D22b', [80,80,80,80,80], 5)
 
-magazines1 = [m1,]
-magazines2 = [m1, m2, m3]
+warehouse = Warehouse.new('sklad A')
+warehouse.push(sr1)
+warehouse.push(sr2)
 
-p magazines1
+magazines2 = [m1, m2, m3, m4, m5, m6, m7]
 
-sr1.load magazines2
+magazines2.sort_by! { |m| m.signature }
+
+warehouse.load(magazines2)
+warehouse.each { |sr| sr.print }
