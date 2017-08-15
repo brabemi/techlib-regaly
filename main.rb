@@ -1,6 +1,6 @@
 class Magazine
   # private, etc
-  @@formats = {UNKNOWN: :UNKNOWN, NORMAL: :NORMAL}
+  @@formats = { UNKNOWN: :UNKNOWN, NORMAL: :NORMAL }
 
   attr_reader :name, :signature, :length, :format, :block_size, :reserve
 
@@ -38,13 +38,13 @@ class Magazine
   end
 
   def format=(format)
-    format = @@formats[:UNKNOWN] unless @@formats.has_value?(format)
+    format = @@formats[:UNKNOWN] unless @@formats.value?(format)
     @format = format
   end
 end
 
 class Block
-  @@types = {UNKNOWN: :UNKNOWN, NORMAL: :NORMAL, RESERVE: :RESERVE}
+  @@types = { UNKNOWN: :UNKNOWN, NORMAL: :NORMAL, RESERVE: :RESERVE }
 
   attr_reader :magazine, :start, :finish, :used, :type
 
@@ -79,16 +79,15 @@ class Block
   end
 
   def used=(used)
-    used = self.max_usage if used > self.max_usage
+    used = max_usage if used > max_usage
     @used = used.to_f
   end
 
   def type=(type)
-    type = @@types[:UNKNOWN] unless @@types.has_value?(type)
+    type = @@types[:UNKNOWN] unless @@types.value?(type)
     @type = type
   end
 end
-
 
 class ShelfRow
   include Enumerable
@@ -100,17 +99,17 @@ class ShelfRow
     self.segment_cnt = segment_sizes.size
     self.segment_sizes = segment_sizes
     self.level_cnt = level_cnt
-    self.init_map
+    init_map
   end
 
   def init_map
     @map = Array.new(@level_cnt) do
-      @segment_sizes.collect { |width| {width: width, space: []} }
+      @segment_sizes.collect { |width| { width: width, space: [] } }
     end
   end
 
   def row_length
-    @segment_cnt*@segment_length
+    @segment_cnt * @segment_length
   end
 
   def name=(name)
@@ -122,7 +121,8 @@ class ShelfRow
   end
 
   def segment_sizes=(segment_sizes)
-    @segment_sizes = segment_sizes.collect { |e| e.to_f}
+    # @segment_sizes = segment_sizes.collect { |e| e.to_f}
+    @segment_sizes = segment_sizes.collect(&:to_f)
   end
 
   def level_cnt=(level_cnt)
@@ -167,64 +167,75 @@ class Warehouse
 
   def each
     return @shelf_rows.each unless block_given?
-    @shelf_rows.each { |item| yield item }
+    @shelf_rows.each { |item| yield item}
+  end
+
+  def alloc_space(segments, seg, used, magazine)
+    block = seg[:width] - magazine.block_size / 2
+
+    # whole segment used
+    if used >= block
+      seg = segments.next # last segment check
+      used = 0
+    end
+
+    # alloc space for books
+    if block - used >= magazine.length
+      seg[:space].push(Block.new(magazine, used, used + magazine.length, magazine.length, Block.types[:NORMAL]))
+      used += magazine.length
+    else
+      placed = block - used
+      seg[:space].push(Block.new(magazine, used, seg[:width], placed, Block.types[:NORMAL]))
+      seg = segments.next # last segment check
+      block = seg[:width] - magazine.block_size / 2
+      while (magazine.length - placed) > block
+        seg[:space].push(Block.new(magazine, 0, seg[:width], block, Block.types[:NORMAL]))
+        placed += block
+        seg = segments.next # last segment check
+        block = seg[:width] - magazine.block_size / 2
+      end
+      used = magazine.length - placed
+      seg[:space].push(Block.new(magazine, 0, used, used, Block.types[:NORMAL]))
+    end
+    [seg, used]
+  end
+
+  def alloc_reserve(segments, seg, used, magazine)
+    # whole segment used
+    if used >= seg[:width]
+      seg = segments.next # last segment check
+      used = 0
+    end
+
+    # alloc reserve space
+    if seg[:width] - used >= magazine.reserve
+      if magazine.reserve > 0
+        seg[:space].push(Block.new(magazine, used, used + magazine.reserve, magazine.reserve, Block.types[:RESERVE]))
+        used += magazine.reserve
+      end
+    else
+      reserved = seg[:width] - used
+      seg[:space].push(Block.new(magazine, used, seg[:width], reserved, Block.types[:RESERVE]))
+      seg = segments.next # last segment check
+      while (magazine.reserve - reserved) > seg[:width]
+        seg[:space].push(Block.new(magazine, 0, seg[:width], seg[:width], Block.types[:RESERVE]))
+        reserved += seg[:width]
+        seg = segments.next # last segment check
+      end
+      used = magazine.reserve - reserved
+      seg[:space].push(Block.new(magazine, 0, used, used, Block.types[:RESERVE]))
+    end
+    [seg, used]
   end
 
   def load(magazines)
     used = 0
-    segments = @shelf_rows.collect_concat { |s| s.to_a } .each
+    segments = @shelf_rows.collect_concat(&:to_a).each
     seg = segments.next # last segment check
 
     magazines.each do |m|
-      block = seg[:width] - m.block_size/2
-
-      # whole segment used
-      if used >= block
-        seg = segments.next # last segment check
-        used = 0
-      end
-
-      if block - used >= m.length
-        seg[:space].push(Block.new(m, used, used + m.length, m.length, Block.types[:NORMAL]))
-        used += m.length
-      else
-        placed = block - used
-        seg[:space].push(Block.new(m, used, seg[:width], placed, Block.types[:NORMAL]))
-        seg = segments.next # last segment check
-        block = seg[:width] - m.block_size/2
-        while (m.length - placed) > block do
-          seg[:space].push(Block.new(m, 0, seg[:width], block, Block.types[:NORMAL]))
-          placed += block
-          seg = segments.next # last segment check
-          block = seg[:width] - m.block_size/2
-        end
-        used = m.length - placed
-        seg[:space].push(Block.new(m, 0, used, used, Block.types[:NORMAL]))
-      end
-
-      # whole segment used
-      if used >= seg[:width]
-        seg = segments.next # last segment check
-        used = 0
-      end
-
-      if seg[:width] - used >= m.reserve
-        if m.reserve > 0
-          seg[:space].push(Block.new(m, used, used + m.reserve, m.reserve, Block.types[:RESERVE]))
-          used += m.reserve
-        end
-      else
-        reserved = seg[:width] - used
-        seg[:space].push(Block.new(m, used, seg[:width], reserved, Block.types[:RESERVE]))
-        seg = segments.next # last segment check
-        while (m.reserve - reserved) > seg[:width] do
-          seg[:space].push(Block.new(m, 0, seg[:width], seg[:width], Block.types[:RESERVE]))
-          reserved += seg[:width]
-          seg = segments.next # last segment check
-        end
-        used = m.reserve - reserved
-        seg[:space].push(Block.new(m, 0, used, used, Block.types[:RESERVE]))
-      end
+      seg, used = alloc_space(segments, seg, used, m)
+      seg, used = alloc_reserve(segments, seg, used, m)
     end
   end
 end
@@ -237,8 +248,8 @@ m5 = Magazine.new('kolo-2', '225', 330, 10, Magazine.formats[:NORMAL], 50)
 m6 = Magazine.new('test', '226', 450, 10, Magazine.formats[:NORMAL], 50)
 m7 = Magazine.new('computer', '227', 390, 10, Magazine.formats[:NORMAL], 50)
 
-sr1 = ShelfRow.new('D22a', [100,100,120,120], 5)
-sr2 = ShelfRow.new('D22b', [80,80,80,80,80], 5)
+sr1 = ShelfRow.new('D22a', [100, 100, 120, 120], 5)
+sr2 = ShelfRow.new('D22b', [80, 80, 80, 80, 80], 5)
 
 warehouse = Warehouse.new('sklad A')
 warehouse.push(sr1)
@@ -246,7 +257,7 @@ warehouse.push(sr2)
 
 magazines2 = [m1, m2, m3, m4, m5, m6, m7]
 
-magazines2.sort_by! { |m| m.signature }
+magazines2.sort_by!(&:signature)
 
 warehouse.load(magazines2)
-warehouse.each { |sr| sr.print }
+warehouse.each(&:print)
