@@ -1,0 +1,9 @@
+development:
+  adapter: postgresql
+  encoding: utf-8
+  host: localhost
+  database: db_name
+  pool: 5
+  username: user
+  password: pass
+
