@@ -1,4 +1,4 @@
-class CreateFloor < ActiveRecord::Migration[5.1]
+class CreateFloor < ActiveRecord::Migration[5.0]
   def change
     create_table :floors, id: :uuid, default: 'uuid_generate_v4()' do |t|
       t.integer :floor, null: false

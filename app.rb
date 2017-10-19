@@ -24,7 +24,3 @@ end
 get '/signature/:id' do |id|
   Signature.find(id).to_json
 end
-
-get '/signature/:id/years' do |id|
-  Signature.find(id).years.to_json
-end

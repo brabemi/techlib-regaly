@@ -1,4 +1,4 @@
-class CreateShelfRows < ActiveRecord::Migration[5.1]
+class CreateShelfRows < ActiveRecord::Migration[5.0]
   def change
     create_table :shelf_rows, id: :uuid, default: 'uuid_generate_v4()' do |t|
       t.string :name, null: false
@@ -10,8 +10,8 @@ class CreateShelfRows < ActiveRecord::Migration[5.1]
       t.float :right_front_y, null: false
       t.string :orientation, null: false
     end
-    add_index :shelf_rows, :name, unique: true
     add_reference :shelf_rows, :floor, type: :uuid, null: false
     add_foreign_key :shelf_rows, :floors, on_update: :cascade, on_delete: :cascade
+    add_index :shelf_rows, [:floor_id, :name], unique: true
   end
 end
