@@ -30,3 +30,10 @@ class ShelfRow < ActiveRecord::Base
   validates :orientation, presence: true
   validates :floor_id, presence: true
 end
+
+class Simulation < ActiveRecord::Base
+  validates :name, presence: true
+  validates :volume_width, presence: true
+  validates :shelfs, presence: true
+  validates :books, presence: true
+end

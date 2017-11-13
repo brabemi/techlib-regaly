@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170929130152) do
+ActiveRecord::Schema.define(version: 20171103084854) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -46,6 +46,13 @@ ActiveRecord::Schema.define(version: 20170929130152) do
     t.integer "volumes_total",    null: false
     t.jsonb   "volumes",          null: false
     t.index ["signature"], name: "index_signatures_on_signature", unique: true, using: :btree
+  end
+
+  create_table "simulations", id: :uuid, default: -> { "uuid_generate_v4()" }, force: :cascade do |t|
+    t.string "name",         null: false
+    t.float  "volume_width", null: false
+    t.jsonb  "shelfs",       null: false
+    t.jsonb  "books",        null: false
   end
 
   add_foreign_key "shelf_rows", "floors", on_update: :cascade, on_delete: :cascade

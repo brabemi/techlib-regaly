@@ -52,3 +52,21 @@ end
 get '/signature/:id/?' do |id|
   Signature.find(id).to_json
 end
+
+get '/simulation/?' do
+  Simulation.all.to_json
+end
+
+put '/simulation/?' do
+  data = JSON.parse(request.body.read)
+  data.each { |k, v| p k, v }
+  ''
+end
+
+options '/simulation/?' do
+  ''
+end
+
+get '/simulation/:id/?' do |id|
+  Simulation.find(id).to_json
+end
