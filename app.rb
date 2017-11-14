@@ -42,7 +42,7 @@ get '/signature/?' do
     query.push('signature_prefix = :sig_pref')
   end
   # p query.join(' and '), query_params
-  Signature.where(query.join(' and '), query_params).to_json
+  Signature.where(query.join(' and '), query_params).order(:signature_number,:signature).to_json
   # sql = Signature.where(query.join(' and '), query_params).to_sql
   # ActiveRecord::Base.connection.exec_query(sql).to_json
   # [].to_json
