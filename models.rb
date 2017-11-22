@@ -31,9 +31,24 @@ class ShelfRow < ActiveRecord::Base
   validates :floor_id, presence: true
 end
 
+class SimBooksValidator < ActiveModel::Validator
+  def validate(record)
+    record.errors[:books] << 'Books have to be array' unless record.books.is_a?(Array)
+  end
+end
+
+class SimShelfsValidator < ActiveModel::Validator
+  def validate(record)
+    record.errors[:shelfs] << 'Shelfs have to be array' unless record.shelfs.is_a?(Array)
+  end
+end
+
 class Simulation < ActiveRecord::Base
-  validates :name, presence: true
+  include ActiveModel::Validations
+  validates :name, presence: true, allow_blank: true
   validates :volume_width, presence: true
-  validates :shelfs, presence: true
-  validates :books, presence: true
+  # validates :shelfs, presence: true
+  validates_with SimBooksValidator
+  validates_with SimShelfsValidator
+  # validates :books, presence: true
 end

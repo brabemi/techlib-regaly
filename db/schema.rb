@@ -49,10 +49,14 @@ ActiveRecord::Schema.define(version: 20171103084854) do
   end
 
   create_table "simulations", id: :uuid, default: -> { "uuid_generate_v4()" }, force: :cascade do |t|
-    t.string "name",         null: false
-    t.float  "volume_width", null: false
-    t.jsonb  "shelfs",       null: false
-    t.jsonb  "books",        null: false
+    t.string  "name",         null: false
+    t.integer "volume_width", null: false
+    t.jsonb   "shelfs",       null: false
+    t.jsonb   "books",        null: false
+  end
+
+  create_table "test", id: false, force: :cascade do |t|
+    t.integer "test"
   end
 
   add_foreign_key "shelf_rows", "floors", on_update: :cascade, on_delete: :cascade

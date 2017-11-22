@@ -5,6 +5,12 @@ require 'sinatra/activerecord'
 
 require './models.rb'
 
+set :show_exceptions, :after_handler
+
+error ActiveRecord::RecordNotFound do
+  404
+end
+
 get '/floor/?' do
   Floor.all.to_json
 end
@@ -38,11 +44,11 @@ get '/signature/?' do
   end
   if params[:sig_pref]
     query_params[:sig_pref] = params[:sig_pref]
-    # query_params[:sig_pref] = "%#{params[:sig_pref]}%"
+    # query_params[:sig_pref] = '%#{params[:sig_pref]}%'
     query.push('signature_prefix = :sig_pref')
   end
   # p query.join(' and '), query_params
-  Signature.where(query.join(' and '), query_params).order(:signature_number,:signature).to_json
+  Signature.where(query.join(' and '), query_params).order(:signature_number, :signature).to_json
   # sql = Signature.where(query.join(' and '), query_params).to_sql
   # ActiveRecord::Base.connection.exec_query(sql).to_json
   # [].to_json
@@ -59,8 +65,13 @@ end
 
 put '/simulation/?' do
   data = JSON.parse(request.body.read)
-  data.each { |k, v| p k, v }
-  ''
+  keys = ['shelfs', 'books', 'name', 'volume_width']
+  keys.each { |k| halt 403, 'Unable to find ' + k unless data.key?(k) }
+  s = Simulation.new
+  keys.each { |k| s.send(k + '=', data[k]) }
+  p s
+  s.save
+  s.id
 end
 
 options '/simulation/?' do
@@ -69,4 +80,19 @@ end
 
 get '/simulation/:id/?' do |id|
   Simulation.find(id).to_json
+end
+
+post '/simulation/:id/?' do |id|
+  data = JSON.parse(request.body.read)
+  keys = ['shelfs', 'books', 'name', 'volume_width']
+  keys.each { |k| halt 403, 'Unable to find ' + k unless data.key?(k) }
+  s = Simulation.find(id)
+  keys.each { |k| s.send(k + '=', data[k]) }
+  p s
+  s.save
+  s.id
+end
+
+options '/simulation/:id/?' do |id|
+  ''
 end
