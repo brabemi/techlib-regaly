@@ -60,7 +60,7 @@ get '/signature/:id/?' do |id|
 end
 
 get '/simulation/?' do
-  Simulation.all.to_json
+  Simulation.select(:id, :name, :volume_width).to_json
 end
 
 put '/simulation/?' do
@@ -69,7 +69,7 @@ put '/simulation/?' do
   keys.each { |k| halt 403, 'Unable to find ' + k unless data.key?(k) }
   s = Simulation.new
   keys.each { |k| s.send(k + '=', data[k]) }
-  p s
+  # p s
   s.save
   s.id
 end
@@ -82,13 +82,18 @@ get '/simulation/:id/?' do |id|
   Simulation.find(id).to_json
 end
 
+delete '/simulation/:id/?' do |id|
+  Simulation.delete(id)
+  200
+end
+
 post '/simulation/:id/?' do |id|
   data = JSON.parse(request.body.read)
   keys = ['shelfs', 'books', 'name', 'volume_width']
   keys.each { |k| halt 403, 'Unable to find ' + k unless data.key?(k) }
   s = Simulation.find(id)
   keys.each { |k| s.send(k + '=', data[k]) }
-  p s
+  # p s
   s.save
   s.id
 end
