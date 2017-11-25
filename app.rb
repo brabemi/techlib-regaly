@@ -48,11 +48,21 @@ get '/signature/?' do
     query.push('signature_prefix = :sig_pref')
   end
   # p query.join(' and '), query_params
-  Signature.where(query.join(' and '), query_params).order(:signature_number, :signature).to_json
+  Signature.where(query.join(' and '), query_params)
+           .order(:signature_prefix, :signature_number, :signature)
+           .to_json
   # sql = Signature.where(query.join(' and '), query_params).to_sql
   # ActiveRecord::Base.connection.exec_query(sql).to_json
   # [].to_json
   # Signature.all.to_json
+end
+
+get '/signature/prefixes/?' do
+  Signature.select(:signature_prefix)
+           .distinct
+           .order(:signature_prefix)
+           .map(&:signature_prefix)
+           .to_json
 end
 
 get '/signature/:id/?' do |id|
@@ -93,9 +103,8 @@ post '/simulation/:id/?' do |id|
   keys.each { |k| halt 403, 'Unable to find ' + k unless data.key?(k) }
   s = Simulation.find(id)
   keys.each { |k| s.send(k + '=', data[k]) }
-  # p s
   s.save
-  s.id
+  return id
 end
 
 options '/simulation/:id/?' do |id|
