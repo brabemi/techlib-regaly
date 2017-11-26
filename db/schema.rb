@@ -16,25 +16,20 @@ ActiveRecord::Schema.define(version: 20171103084854) do
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
 
-  create_table "floors", id: :uuid, default: -> { "uuid_generate_v4()" }, force: :cascade do |t|
-    t.integer "floor",  null: false
-    t.integer "width",  null: false
-    t.integer "height", null: false
-    t.index ["floor"], name: "index_floors_on_floor", unique: true, using: :btree
+  create_table "floor_sections", id: :uuid, default: -> { "uuid_generate_v4()" }, force: :cascade do |t|
+    t.integer "floor", null: false
+    t.string  "name",  null: false
+    t.index ["name"], name: "index_floor_sections_on_name", unique: true, using: :btree
   end
 
   create_table "shelf_rows", id: :uuid, default: -> { "uuid_generate_v4()" }, force: :cascade do |t|
-    t.string  "name",            null: false
-    t.jsonb   "segment_lengths", null: false
-    t.integer "levels",          null: false
-    t.integer "row_length",      null: false
-    t.integer "row_width",       null: false
-    t.float   "right_front_x",   null: false
-    t.float   "right_front_y",   null: false
-    t.string  "orientation",     null: false
-    t.uuid    "floor_id",        null: false
-    t.index ["floor_id", "name"], name: "index_shelf_rows_on_floor_id_and_name", unique: true, using: :btree
-    t.index ["floor_id"], name: "index_shelf_rows_on_floor_id", using: :btree
+    t.string  "name",             null: false
+    t.jsonb   "segment_lengths",  null: false
+    t.integer "levels",           null: false
+    t.integer "row_length",       null: false
+    t.uuid    "floor_section_id", null: false
+    t.index ["floor_section_id", "name"], name: "index_shelf_rows_on_floor_section_id_and_name", unique: true, using: :btree
+    t.index ["floor_section_id"], name: "index_shelf_rows_on_floor_section_id", using: :btree
   end
 
   create_table "signatures", id: :uuid, default: -> { "uuid_generate_v4()" }, force: :cascade do |t|
@@ -59,5 +54,5 @@ ActiveRecord::Schema.define(version: 20171103084854) do
     t.integer "test"
   end
 
-  add_foreign_key "shelf_rows", "floors", on_update: :cascade, on_delete: :cascade
+  add_foreign_key "shelf_rows", "floor_sections", on_update: :cascade, on_delete: :cascade
 end

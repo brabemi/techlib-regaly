@@ -11,16 +11,16 @@ error ActiveRecord::RecordNotFound do
   404
 end
 
-get '/floor/?' do
-  Floor.all.to_json
+get '/floorsection/?' do
+  FloorSection.all.to_json
 end
 
-get '/floor/:id/?' do |id|
-  Floor.find(id).to_json
+get '/floorsection/:id/?' do |id|
+  FloorSection.find(id).to_json
 end
 
-get '/floor/:id/shelfrows/?' do |id|
-  Floor.find(id).shelf_rows.to_json
+get '/floorsection/:id/shelfrows/?' do |id|
+  FloorSection.find(id).shelf_rows.order(:name).to_json
 end
 
 get '/signature/?' do

@@ -5,13 +5,9 @@ class CreateShelfRows < ActiveRecord::Migration[5.0]
       t.jsonb :segment_lengths, null: false
       t.integer :levels, null: false
       t.integer :row_length, null: false
-      t.integer :row_width, null: false
-      t.float :right_front_x, null: false
-      t.float :right_front_y, null: false
-      t.string :orientation, null: false
     end
-    add_reference :shelf_rows, :floor, type: :uuid, null: false
-    add_foreign_key :shelf_rows, :floors, on_update: :cascade, on_delete: :cascade
-    add_index :shelf_rows, [:floor_id, :name], unique: true
+    add_reference :shelf_rows, :floor_section, type: :uuid, null: false
+    add_foreign_key :shelf_rows, :floor_sections, on_update: :cascade, on_delete: :cascade
+    add_index :shelf_rows, [:floor_section_id, :name], unique: true
   end
 end
