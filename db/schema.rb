@@ -45,6 +45,7 @@ ActiveRecord::Schema.define(version: 20171103084854) do
 
   create_table "simulations", id: :uuid, default: -> { "uuid_generate_v4()" }, force: :cascade do |t|
     t.string  "name",         null: false
+    t.string  "description",  null: false
     t.integer "volume_width", null: false
     t.jsonb   "shelfs",       null: false
     t.jsonb   "books",        null: false

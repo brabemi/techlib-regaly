@@ -75,7 +75,7 @@ end
 
 put '/simulation/?' do
   data = JSON.parse(request.body.read)
-  keys = ['shelfs', 'books', 'name', 'volume_width']
+  keys = ['shelfs', 'books', 'name', 'volume_width', 'description']
   keys.each { |k| halt 403, 'Unable to find ' + k unless data.key?(k) }
   s = Simulation.new
   keys.each { |k| s.send(k + '=', data[k]) }
@@ -99,7 +99,7 @@ end
 
 post '/simulation/:id/?' do |id|
   data = JSON.parse(request.body.read)
-  keys = ['shelfs', 'books', 'name', 'volume_width']
+  keys = ['shelfs', 'books', 'name', 'volume_width', 'description']
   keys.each { |k| halt 403, 'Unable to find ' + k unless data.key?(k) }
   s = Simulation.find(id)
   keys.each { |k| s.send(k + '=', data[k]) }

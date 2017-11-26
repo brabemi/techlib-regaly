@@ -41,9 +41,8 @@ end
 class Simulation < ActiveRecord::Base
   include ActiveModel::Validations
   validates :name, presence: true, allow_blank: true
+  validates :description, presence: true, allow_blank: true
   validates :volume_width, presence: true
-  # validates :shelfs, presence: true
   validates_with SimBooksValidator
   validates_with SimShelfsValidator
-  # validates :books, presence: true
 end
