@@ -1,0 +1,5 @@
+access:
+  # request header name
+  category-header: 'HTTP_X_CATEGORY'
+  # [] -> all, ['user', 'admin'] -> X-Category in ['user', 'admin']
+  category: ['user', 'admin']

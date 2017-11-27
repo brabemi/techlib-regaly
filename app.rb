@@ -2,8 +2,11 @@
 require 'json'
 require 'sinatra'
 require 'sinatra/activerecord'
+require "sinatra/config_file"
 
 require './models.rb'
+
+config_file 'config/config.yml'
 
 set :show_exceptions, :after_handler
 set :public_folder, 'frontend/dist'
@@ -13,7 +16,11 @@ error ActiveRecord::RecordNotFound do
 end
 
 before do
-  p headers
+  header_name = settings.access['category-header']
+  category = settings.access['category']
+  if category.kind_of?(Array) && !category.empty?
+    halt 403 unless request.env.key?(header_name) && category.include?(request.env[header_name])
+  end
 end
 
 get '/' do
