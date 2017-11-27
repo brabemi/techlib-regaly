@@ -6,9 +6,18 @@ require 'sinatra/activerecord'
 require './models.rb'
 
 set :show_exceptions, :after_handler
+set :public_folder, 'frontend/dist'
 
 error ActiveRecord::RecordNotFound do
   404
+end
+
+before do
+  p headers
+end
+
+get '/' do
+  send_file 'frontend/dist/index.html'
 end
 
 get '/floorsection/?' do
