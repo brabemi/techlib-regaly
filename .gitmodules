@@ -1,2 +1,3 @@
 [submodule "frontend"]
+	path = frontend
 	url = https://github.com/brabemi/techlib-regaly-frontend.git
