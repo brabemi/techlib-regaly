@@ -27,6 +27,7 @@ ActiveRecord::Schema.define(version: 20171103084854) do
     t.jsonb   "segment_lengths",  null: false
     t.integer "levels",           null: false
     t.integer "row_length",       null: false
+    t.boolean "enabled",          null: false
     t.uuid    "floor_section_id", null: false
     t.index ["floor_section_id", "name"], name: "index_shelf_rows_on_floor_section_id_and_name", unique: true, using: :btree
     t.index ["floor_section_id"], name: "index_shelf_rows_on_floor_section_id", using: :btree

@@ -24,6 +24,7 @@ class ShelfRow < ActiveRecord::Base
   validates :levels, presence: true
   validates :row_length, presence: true
   validates :floor_section_id, presence: true
+  validates :enabled, inclusion: [true, false]
 end
 
 class SimBooksValidator < ActiveModel::Validator

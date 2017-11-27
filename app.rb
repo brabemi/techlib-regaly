@@ -39,6 +39,28 @@ get '/floorsection/:id/shelfrows/?' do |id|
   FloorSection.find(id).shelf_rows.order(:name).to_json
 end
 
+get '/floorsection/:id/shelfrows/enabled/?' do |id|
+  FloorSection.find(id).shelf_rows.where(enabled: true).order(:name).to_json
+end
+
+get '/floorsection/:id/shelfrows/disabled/?' do |id|
+  FloorSection.find(id).shelf_rows.where(enabled: false).order(:name).to_json
+end
+
+get '/shelfrow/:id/enable/?' do |id|
+  sr = ShelfRow.find(id)
+  sr.enabled = true
+  sr.save
+  id
+end
+
+get '/shelfrow/:id/disable/?' do |id|
+  sr = ShelfRow.find(id)
+  sr.enabled = false
+  sr.save
+  id
+end
+
 get '/signature/?' do
   query = []
   query_params = {}
@@ -95,7 +117,6 @@ put '/simulation/?' do
   keys.each { |k| halt 403, 'Unable to find ' + k unless data.key?(k) }
   s = Simulation.new
   keys.each { |k| s.send(k + '=', data[k]) }
-  # p s
   s.save
   s.id
 end
@@ -120,7 +141,7 @@ post '/simulation/:id/?' do |id|
   s = Simulation.find(id)
   keys.each { |k| s.send(k + '=', data[k]) }
   s.save
-  return id
+  id
 end
 
 options '/simulation/:id/?' do |id|
