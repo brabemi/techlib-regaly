@@ -7,7 +7,7 @@ class CreateSignatures < ActiveRecord::Migration[5.0]
       t.integer :year_min, null: false
       t.integer :year_max, null: false
       t.integer :volumes_total, null: false
-      t.jsonb :volumes, null: false
+      t.json :volumes, null: false
     end
     add_index :signatures, :signature, unique: true
   end

@@ -24,7 +24,7 @@ ActiveRecord::Schema.define(version: 20171103084854) do
 
   create_table "shelf_rows", id: :uuid, default: -> { "uuid_generate_v4()" }, force: :cascade do |t|
     t.string  "name",             null: false
-    t.jsonb   "segment_lengths",  null: false
+    t.json    "segment_lengths",  null: false
     t.integer "levels",           null: false
     t.integer "row_length",       null: false
     t.boolean "enabled",          null: false
@@ -40,7 +40,7 @@ ActiveRecord::Schema.define(version: 20171103084854) do
     t.integer "year_min",         null: false
     t.integer "year_max",         null: false
     t.integer "volumes_total",    null: false
-    t.jsonb   "volumes",          null: false
+    t.json    "volumes",          null: false
     t.index ["signature"], name: "index_signatures_on_signature", unique: true, using: :btree
   end
 
@@ -48,8 +48,8 @@ ActiveRecord::Schema.define(version: 20171103084854) do
     t.string  "name",         null: false
     t.string  "description",  null: false
     t.integer "volume_width", null: false
-    t.jsonb   "shelfs",       null: false
-    t.jsonb   "books",        null: false
+    t.json    "shelfs",       null: false
+    t.json    "books",        null: false
   end
 
   create_table "test", id: false, force: :cascade do |t|

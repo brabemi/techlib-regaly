@@ -4,8 +4,8 @@ class CreateSimulation < ActiveRecord::Migration[5.0]
       t.string :name, null: false
       t.string :description, null: false
       t.integer :volume_width, null: false
-      t.jsonb :shelfs, null: false
-      t.jsonb :books, null: false
+      t.json :shelfs, null: false
+      t.json :books, null: false
     end
   end
 end
