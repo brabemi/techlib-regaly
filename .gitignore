@@ -1,2 +1,3 @@
 config/*
 !config/*.example
+dev_test_data
