@@ -28,7 +28,7 @@ get '/' do
 end
 
 get '/floorsection/?' do
-  FloorSection.all.to_json
+  FloorSection.order(:floor, :name).to_json
 end
 
 get '/floorsection/:id/?' do |id|
