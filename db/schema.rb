@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171103084854) do
+ActiveRecord::Schema.define(version: 20180103135249) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -34,13 +34,14 @@ ActiveRecord::Schema.define(version: 20171103084854) do
   end
 
   create_table "signatures", id: :uuid, default: -> { "uuid_generate_v4()" }, force: :cascade do |t|
-    t.string  "signature",        null: false
-    t.string  "signature_prefix", null: false
-    t.integer "signature_number", null: false
-    t.integer "year_min",         null: false
-    t.integer "year_max",         null: false
-    t.integer "volumes_total",    null: false
-    t.json    "volumes",          null: false
+    t.string  "signature",                    null: false
+    t.string  "signature_prefix",             null: false
+    t.integer "signature_number",             null: false
+    t.integer "year_min",                     null: false
+    t.integer "year_max",                     null: false
+    t.integer "volumes_total",                null: false
+    t.json    "volumes",                      null: false
+    t.integer "growth",           default: 0, null: false
     t.index ["signature"], name: "index_signatures_on_signature", unique: true, using: :btree
   end
 

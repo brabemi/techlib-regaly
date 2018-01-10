@@ -6,6 +6,12 @@ class FloorSection < ActiveRecord::Base
   validates :name, presence: true, uniqueness: true
 end
 
+class SigVolumesValidator < ActiveModel::Validator
+  def validate(record)
+    record.errors[:volumes] << 'Volumes have to be hash' unless record.volumes.is_a?(Hash)
+  end
+end
+
 class Signature < ActiveRecord::Base
   validates :signature, presence: true, uniqueness: true
   validates :signature_prefix, presence: true
@@ -13,7 +19,8 @@ class Signature < ActiveRecord::Base
   validates :year_min, presence: true
   validates :year_max, presence: true
   validates :volumes_total, presence: true
-  validates :volumes, presence: true
+  validates :growth, presence: true
+  validates_with SigVolumesValidator
 end
 
 class ShelfRow < ActiveRecord::Base
