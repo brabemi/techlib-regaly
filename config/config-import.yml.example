@@ -1,0 +1,9 @@
+database:
+  username: user
+  password: pass
+  host: db.server.cz
+  port: 1521
+  sid: dbsid
+prefixes: ['A', 'B', 'C', 'D', 'E']
+prefixes_growth: ['A', 'C', 'E']
+log_level: 1

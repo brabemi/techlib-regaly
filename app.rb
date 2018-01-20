@@ -2,11 +2,13 @@
 require 'json'
 require 'sinatra'
 require 'sinatra/activerecord'
-require "sinatra/config_file"
+require 'sinatra/config_file'
 
-require './models.rb'
+require_relative './models.rb'
 
-config_file 'config/config.yml'
+ROOT_DIR = File.dirname(__FILE__)
+CONFIG_PATH = ROOT_DIR + '/config/config.yml'
+config_file CONFIG_PATH
 
 set :show_exceptions, :after_handler
 set :public_folder, 'frontend/dist'
