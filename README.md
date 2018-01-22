@@ -1,6 +1,6 @@
 # techlib-regaly
 
-Aplikace techlib-regaly slouží k usnadnění plánování umístění fondu knih na regály. Činnost je prováděna ve dvou fázích. První fází je agregace dat o fondu, kdy dochází k načtení a předzpracování dat z externích databází. V druhé fázi pak může uživatel ve webové aplikaci snadno vytvořit různé plán umístění vybrané části fondu na vybrané regály.
+Systém pro plánování uložení fondu knih je navržen tak, aby uživateli usnadnil rutinní činnosti spojené s touto agendou. Systém funguje tak, že načítá a předzpracovává data z externích databází. Uživatel následně při plánování pracuje s agregovanými daty. Řešení podporuje práci s daty podle typu signatury, čísla signatury a roku vydání. Dále je také možno naplánovat rezervní prostor pro přírůstky u rostoucích titulů. 
 
 # Instalace
 
